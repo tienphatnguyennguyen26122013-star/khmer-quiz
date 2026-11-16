@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Khmer Culture Quiz</title>
+<style>
+:root{--navy:#071b50;--blue:#0b3b91;--gold:#f6bd24;--cream:#fff8e7;--ink:#10234f}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:radial-gradient(circle at 20% 10%,#174b9b 0,#0a2868 35%,#06143e 100%);overflow-x:hidden}
+body:before{content:"✦   ·      ✧       ·      ✦        ·      ✧       ·       ✦";position:fixed;inset:0;color:#fff5bd;opacity:.5;font-size:24px;letter-spacing:18px;line-height:3.5;pointer-events:none;white-space:normal;z-index:-1}
+.wrap{width:min(900px,94%);margin:34px auto;padding-bottom:35px}
+header{text-align:center;color:#fff;padding:10px 12px 22px}
+.kicker{color:#ffd34e;letter-spacing:3px;text-transform:uppercase;font-size:.82rem;font-weight:700}
+h1{font-size:clamp(2rem,6vw,3.5rem);margin:9px 0 5px;color:#fff4d6}
+.sub{color:#dce8ff;margin:0}
+.progress-area{margin:12px auto 18px;max-width:760px;color:#fff;font-size:.9rem}
+.progress-track{height:9px;background:#ffffff30;border-radius:20px;overflow:hidden;margin-top:8px}
+.progress{height:100%;width:0;background:linear-gradient(90deg,#f7b928,#fff0a3);transition:width .25s}
+.card{max-width:760px;margin:auto;background:var(--cream);border:3px solid var(--gold);border-radius:26px;padding:clamp(20px,4vw,34px);box-shadow:0 16px 40px #0006;position:relative}
+.star{position:absolute;right:22px;top:12px;color:#e5a900;font-size:28px}
+.number{display:inline-block;background:#0b2b70;color:#fff;border:2px solid var(--gold);border-radius:999px;padding:7px 14px;font-weight:bold;font-size:.9rem}
+.question{font-size:clamp(1.25rem,3.5vw,1.75rem);line-height:1.35;margin:18px 0 5px;font-weight:800}
+.translation{margin:0 0 20px;color:#596782;font-style:italic}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.option{display:flex;align-items:flex-start;gap:12px;text-align:left;padding:15px;border:2px solid #d6dceb;border-radius:15px;background:#fff;color:var(--ink);font-size:1rem;line-height:1.35;cursor:pointer;transition:.15s}
+.option:hover:not(:disabled){border-color:#d99c00;transform:translateY(-2px);box-shadow:0 5px 12px #0b24501a}
+.letter{flex:0 0 30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#0b2b70;color:#fff;font-weight:bold}
+.option:disabled{cursor:default}
+.option.correct{border-color:#15965c;background:#e8fff2}
+.option.correct .letter{background:#15965c}
+.option.wrong{border-color:#d13c49;background:#fff0f0}
+.option.wrong .letter{background:#d13c49}
+.feedback{display:none;margin-top:16px;padding:13px 15px;border-radius:12px;font-weight:700}
+.feedback.show{display:block}
+.feedback.good{background:#e2f8eb;color:#12663e}
+.feedback.bad{background:#fff0e9;color:#9c3b1c}
+.controls{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:22px}
+button.action{border:0;border-radius:999px;padding:12px 22px;background:#0b2b70;color:#fff;font-size:1rem;font-weight:700;cursor:pointer}
+button.action:disabled{opacity:.4;cursor:not-allowed}
+button.secondary{background:#e9edf5;color:#17305e}
+.result{text-align:center;display:none}
+.result h2{font-size:2rem;color:#0b2b70}
+.score{font-size:3rem;font-weight:900;color:#c28a00;margin:12px}
+.result p{line-height:1.6}
+footer{text-align:center;color:#d9e5ff;font-size:.85rem;margin-top:18px}
+@media(max-width:620px){.options{grid-template-columns:1fr}.wrap{margin-top:18px}.controls{flex-wrap:wrap}.controls button{flex:1}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="kicker">✦ Explore Khmer Heritage ✦</div>
+  <h1>Khmer Culture Quiz</h1>
+  <p class="sub">4 questions · Choose the best answer · Test your knowledge!</p>
+</header>
+<div class="progress-area">
+  <div style="display:flex;justify-content:space-between"><span id="progressText">Question 1 of 4</span><span id="percent">0%</span></div>
+  <div class="progress-track"><div class="progress" id="progress"></div></div>
+</div>
+<main class="card" id="quiz">
+  <div class="star">✦</div>
+  <span class="number" id="number">QUESTION 01</span>
+  <div class="question" id="question"></div>
+  <p class="translation" id="translation"></p>
+  <div class="options" id="options"></div>
+  <div class="feedback" id="feedback" aria-live="polite"></div>
+  <div class="controls">
+    <button class="action secondary" id="restart" type="button">↻ Restart</button>
+    <button class="action" id="next" type="button" disabled>Next question →</button>
+  </div>
+</main>
+<section class="card result" id="result">
+  <div class="star">✦</div>
+  <div class="kicker">Quiz completed</div>
+  <h2>Great job!</h2>
+  <div class="score" id="score">0/4</div>
+  <p id="message"></p>
+  <button class="action" id="again" type="button">Try again ↻</button>
+</section>
+<footer>Made for learning · Khmer Culture</footer>
+</div>
+<script>
+const questions = [
+ {q:"Where do most Khmer people in Vietnam live?",vi:"(Dịch: Phần lớn người Khmer ở Việt Nam sống ở đâu?)",a:["Northern Vietnam (Miền Bắc Việt Nam)","Southern Vietnam (Miền Nam Việt Nam)","Central Vietnam (Miền Trung Việt Nam)","Ha Noi (Hà Nội)"],correct:1,why:"Most Khmer people in Vietnam live in Southern Vietnam."},
+ {q:"What is the main religion of many Khmer people?",vi:"(Dịch: Tôn giáo chính của nhiều người Khmer là gì?)",a:["Christianity (Cơ đốc giáo)","Islam (Hồi giáo)","Buddhism (Phật giáo)","Hinduism (Ấn Độ giáo)"],correct:2,why:"Many Khmer people follow Buddhism."},
+ {q:"What is the traditional New Year festival of the Khmer people called?",vi:"(Dịch: Lễ hội năm mới truyền thống của người Khmer được gọi là gì?)",a:["Tet Holiday (Tết Nguyên đán)","Chol Chnam Thmay (Tết Chôl Chnăm Thmây)","Mid-Autumn Festival (Tết Trung thu)","Hung Kings' Festival (Giỗ Tổ Hùng Vương)"],correct:1,why:"The Khmer traditional New Year is called Chol Chnam Thmay."},
+ {q:"What is a special feature of traditional Khmer architecture?",vi:"(Dịch: Đặc điểm nổi bật của kiến trúc truyền thống Khmer là gì?)",a:["Tall stone towers (Những tòa tháp đá cao)","Wooden houses only (Chỉ có nhà bằng gỗ)","Khmer pagodas with colorful decorations (Chùa Khmer với những họa tiết trang trí đầy màu sắc)","Modern glass buildings (Những tòa nhà kính hiện đại)"],correct:2,why:"Khmer pagodas are known for their colorful decorations."}
+];
+let index=0,score=0,answered=false;
+const $=id=>document.getElementById(id);
+function render(){
+ answered=false;
+ const item=questions[index];
+ $("number").textContent="QUESTION "+String(index+1).padStart(2,"0");
+ $("question").textContent=item.q;
+ $("translation").textContent=item.vi;
+ $("options").innerHTML="";
+ item.a.forEach((answer,i)=>{
+  const b=document.createElement("button");b.className="option";b.type="button";
+  b.innerHTML='<span class="letter">'+String.fromCharCode(65+i)+'</span><span></span>';
+  b.querySelector("span:last-child").textContent=answer;
+  b.addEventListener("click",()=>choose(i,b));$("options").appendChild(b);
+ });
+ $("feedback").className="feedback";$("feedback").textContent="";
+ $("next").disabled=true;$("next").textContent=index===questions.length-1?"See results →":"Next question →";
+ $("progressText").textContent="Question "+(index+1)+" of "+questions.length;
+ $("percent").textContent=Math.round(index/questions.length*100)+"%";
+ $("progress").style.width=(index/questions.length*100)+"%";
+}
+function choose(choice,button){
+ if(answered)return;answered=true;
+ const item=questions[index],buttons=[...$("options").children],correct=choice===item.correct;
+ if(correct)score++;
+ buttons.forEach((b,i)=>{b.disabled=true;if(i===item.correct)b.classList.add("correct");else if(i===choice)b.classList.add("wrong")});
+ const f=$("feedback");f.className="feedback show "+(correct?"good":"bad");
+ f.textContent=(correct?"✓ Correct! ":"✗ Not quite. ")+item.why;
+ $("next").disabled=false;
+}
+$("next").addEventListener("click",()=>{
+ if(!answered)return;
+ if(index<questions.length-1){index++;render()}else showResult();
+});
+function showResult(){
+ $("quiz").style.display="none";$("result").style.display="block";
+ $("score").textContent=score+"/"+questions.length;
+ $("message").textContent=score===4?"Perfect score! Excellent knowledge of Khmer culture.":score>=2?"Well done! Review the explanations and try again.":"Keep learning! Try the quiz again to improve your score.";
+ $("progressText").textContent="Completed";$("percent").textContent="100%";$("progress").style.width="100%";
+}
+function restart(){index=0;score=0;$("quiz").style.display="block";$("result").style.display="none";render()}
+$("restart").addEventListener("click",restart);$("again").addEventListener("click",restart);
+render();
+</script>
+</body>
+</html>
